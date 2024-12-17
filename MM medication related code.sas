@@ -3,11 +3,11 @@ libname aa '/vol/userdata13/sta_room417' ;
 
 
 /************************************************************************/
-/************ Part 1. ¾ê´Â ¾àÁ¦ ºĞÆ÷ º¸±â À§ÇÔ ***************/
+/************ Part 1. ì–˜ëŠ” ì•½ì œ ë¶„í¬ ë³´ê¸° ìœ„í•¨ ***************/
 /************************************************************************/
 
 
-/* R¿¡¼­ MGUS to MM °¡Á®¿À±â (N=281) */
+/* Rì—ì„œ MGUS to MM ê°€ì ¸ì˜¤ê¸° (N=281) */
 proc import out=mgus_to_mm
 datafile="/vol/userdata13/sta_room417/mgus_to_mm.csv"
 dbms=csv
@@ -18,7 +18,7 @@ data mgus_to_mm; set mgus_to_mm; jid1=compress(put(jid, 20.)); run;
 data mgus_to_mm; set mgus_to_mm; drop jid; rename jid1=jid; run;
 
 
-/*** mergeÇÏ±â ***/
+/*** mergeí•˜ê¸° ***/
 /* mgus */
 data MGUS_to_MM; set mgus_to_mm; group=1; run; *281;
 data sMM_to_MM; set aa.final_smm_cohort; if mm_outcome=1; group=2; run; *1,884;
@@ -68,7 +68,7 @@ where (div_cd in ('189901ATB', '463301BIJ', '463302BIJ', '463303BIJ', '485701ACH
 group by jid;
 quit; *;
 
-/* ¾àÁ¦¸¦ category·Î ºĞ·ù */
+/* ì•½ì œë¥¼ categoryë¡œ ë¶„ë¥˜ */
 proc sql;
 create table MM_medication4 as
 select *,
@@ -100,13 +100,13 @@ proc sort data=MM_medication6 nodupkey out=MM_medication_id; by jid; run;
 proc sql;
 create table MM_medication_id as
 select *,
-/* ´Üµ¶ »ç¿ë */
+/* ë‹¨ë… ì‚¬ìš© */
 case when (mel_yn1=1 and borte_yn1=0 and thali_yn1=0 and lenal_yn1=0) then 1 else 0 end as mel_only,
 case when (mel_yn1=0 and borte_yn1=1 and thali_yn1=0 and lenal_yn1=0) then 1 else 0 end as borte_only,
 case when (mel_yn1=0 and borte_yn1=0 and thali_yn1=1 and lenal_yn1=0) then 1 else 0 end as thali_only,
 case when (mel_yn1=0 and borte_yn1=0 and thali_yn1=0 and lenal_yn1=1) then 1 else 0 end as lenal_only,
 
-/* 2°³ combination */
+/* 2ê°œ combination */
 case when (mel_yn1=1 and borte_yn1=1 and thali_yn1=0 and lenal_yn1=0) then 1 else 0 end as mel_borte,
 case when (mel_yn1=1 and borte_yn1=0 and thali_yn1=1 and lenal_yn1=0) then 1 else 0 end as mel_thali,
 case when (mel_yn1=1 and borte_yn1=0 and thali_yn1=0 and lenal_yn1=1) then 1 else 0 end as mel_lenal,
@@ -115,12 +115,12 @@ case when (mel_yn1=0 and borte_yn1=1 and thali_yn1=1 and lenal_yn1=0) then 1 els
 case when (mel_yn1=0 and borte_yn1=1 and thali_yn1=0 and lenal_yn1=1) then 1 else 0 end as borte_lenal,
 case when (mel_yn1=0 and borte_yn1=0 and thali_yn1=1 and lenal_yn1=1) then 1 else 0 end as thali_lenal,
 
-/* 3°³ combination */
+/* 3ê°œ combination */
 case when (mel_yn1=1 and borte_yn1=1 and thali_yn1=1 and lenal_yn1=0) then 1 else 0 end as mel_borte_thali,
 case when (mel_yn1=1 and borte_yn1=1 and thali_yn1=0 and lenal_yn1=1) then 1 else 0 end as mel_borte_lenal,
 case when (mel_yn1=0 and borte_yn1=1 and thali_yn1=1 and lenal_yn1=1) then 1 else 0 end as borte_thali_lenal,
 
-/* 4°³ combination */
+/* 4ê°œ combination */
 case when (mel_yn1=1 and borte_yn1=1 and thali_yn1=1 and lenal_yn1=1) then 1 else 0 end as mel_borte_thali_lenal
 
 from MM_medication_id; quit;
@@ -128,7 +128,7 @@ from MM_medication_id; quit;
 
 proc freq data=MM_medication_id; table group*(mel_only borte_only thali_only lenal_only mel_borte mel_thali mel_lenal borte_thali borte_lenal thali_lenal mel_borte_thali mel_borte_lenal borte_thali_lenal mel_borte_thali_lenal)/expected chisq fisher; run;
 
-/* ´Ù½Ã ¹­ÀÚ */
+/* ë‹¤ì‹œ ë¬¶ì */
 proc sql;
 create table MM_medication_id2 as
 select *,
@@ -139,7 +139,7 @@ case when (mel_borte=1 or mel_borte_thali=1 or mel_borte_lenal=1) then 1 else 0 
 case when (mel_thali=1 or mel_lenal=1) then 1 else 0 end as other
 from MM_medication_id; quit;
 
-/*other term Á¦¿Ü*/
+/*other term ì œì™¸*/
 proc sql;
 create table MM_medication_id3 as
 select *
@@ -153,11 +153,11 @@ proc freq data=MM_medication_id3; table group*(mp vd thali_only lenal_only vmp v
 
 
 /************************************************************************************/
-/************ Part 2. ¾ê´Â ¾àÁ¦ termÀ» ºĞ¼®¿¡ ÇÊ¿äÇÑ db¿¡ ºÙÀÌ´Â °úÁ¤ ***************/
+/************ Part 2. ì–˜ëŠ” ì•½ì œ termì„ ë¶„ì„ì— í•„ìš”í•œ dbì— ë¶™ì´ëŠ” ê³¼ì • ***************/
 /************************************************************************************/
-/* Part 2¿¡¼­ ¸¸µç°É R·Î °®°í °¡¼­ ºĞ¼®ÇÑ´Ù. */
+/* Part 2ì—ì„œ ë§Œë“ ê±¸ Rë¡œ ê°–ê³  ê°€ì„œ ë¶„ì„í•œë‹¤. */
 
-/* denovo MM µû·Î ¸¸µé±â(13,655) */
+/* denovo MM ë”°ë¡œ ë§Œë“¤ê¸°(13,655) */
 proc sql;
 create table aa.denovoMM as
 select *
@@ -165,14 +165,14 @@ from aa.smm_surv
 where smm =.; run; *13,655;
 
 
-/* final sMM cohort µû·Î ¸¸µé±â(4,107) */
+/* final sMM cohort ë”°ë¡œ ë§Œë“¤ê¸°(4,107) */
 proc sql;
 create table aa.final_smm_cohort as
 select *
 from aa.smm_surv
 where smm=1; run; *4,107;
 
-/* aa.mgus_surv_cci, aa.final_smm_cohort, aa.denovoMM¿¡ medication ÀÖ³Ä ¾ø³Ä¸¦ º¯¼ö·Î ºÙÀÎ´Ù.*/
+/* aa.mgus_surv_cci, aa.final_smm_cohort, aa.denovoMMì— medication ìˆëƒ ì—†ëƒë¥¼ ë³€ìˆ˜ë¡œ ë¶™ì¸ë‹¤.*/
 data aa.mgus_surv_mm; set aa.mgus_surv_cci; run;
 
 %MACRO MEDI2(DBNAME);
@@ -205,7 +205,7 @@ where (div_cd in ('189901ATB', '463301BIJ', '463302BIJ', '463303BIJ', '485701ACH
 group by jid;
 quit; *;
 
-/* ¾àÁ¦¸¦ category·Î ºĞ·ù */
+/* ì•½ì œë¥¼ categoryë¡œ ë¶„ë¥˜ */
 proc sql;
 create table MM_medication4 as
 select *,
@@ -238,13 +238,13 @@ proc sort data=MM_medication6 nodupkey out=MM_medication_id; by jid; run;
 proc sql;
 create table MM_medication_id as
 select *,
-/* ´Üµ¶ »ç¿ë */
+/* ë‹¨ë… ì‚¬ìš© */
 case when (mel_yn1=1 and borte_yn1=0 and thali_yn1=0 and lenal_yn1=0) then 1 else 0 end as mel_only,
 case when (mel_yn1=0 and borte_yn1=1 and thali_yn1=0 and lenal_yn1=0) then 1 else 0 end as borte_only,
 case when (mel_yn1=0 and borte_yn1=0 and thali_yn1=1 and lenal_yn1=0) then 1 else 0 end as thali_only,
 case when (mel_yn1=0 and borte_yn1=0 and thali_yn1=0 and lenal_yn1=1) then 1 else 0 end as lenal_only,
 
-/* 2°³ combination */
+/* 2ê°œ combination */
 case when (mel_yn1=1 and borte_yn1=1 and thali_yn1=0 and lenal_yn1=0) then 1 else 0 end as mel_borte,
 case when (mel_yn1=1 and borte_yn1=0 and thali_yn1=1 and lenal_yn1=0) then 1 else 0 end as mel_thali,
 case when (mel_yn1=1 and borte_yn1=0 and thali_yn1=0 and lenal_yn1=1) then 1 else 0 end as mel_lenal,
@@ -253,18 +253,18 @@ case when (mel_yn1=0 and borte_yn1=1 and thali_yn1=1 and lenal_yn1=0) then 1 els
 case when (mel_yn1=0 and borte_yn1=1 and thali_yn1=0 and lenal_yn1=1) then 1 else 0 end as borte_lenal,
 case when (mel_yn1=0 and borte_yn1=0 and thali_yn1=1 and lenal_yn1=1) then 1 else 0 end as thali_lenal,
 
-/* 3°³ combination */
+/* 3ê°œ combination */
 case when (mel_yn1=1 and borte_yn1=1 and thali_yn1=1 and lenal_yn1=0) then 1 else 0 end as mel_borte_thali,
 case when (mel_yn1=1 and borte_yn1=1 and thali_yn1=0 and lenal_yn1=1) then 1 else 0 end as mel_borte_lenal,
 case when (mel_yn1=0 and borte_yn1=1 and thali_yn1=1 and lenal_yn1=1) then 1 else 0 end as borte_thali_lenal,
 
-/* 4°³ combination */
+/* 4ê°œ combination */
 case when (mel_yn1=1 and borte_yn1=1 and thali_yn1=1 and lenal_yn1=1) then 1 else 0 end as mel_borte_thali_lenal
 
 from MM_medication_id; quit;
 
 
-/* ´Ù½Ã ¹­ÀÚ */
+/* ë‹¤ì‹œ ë¬¶ì */
 proc sql;
 create table MM_medication_id2 as
 select *,
@@ -286,10 +286,10 @@ from aa.&dbname. as a left join mm_medication_id2 as b on a.jid=b.jid; quit;
 
 
 /************************************************************************************/
-/************ Part 3. other¿¡¼­ chisq, fisher exact test ±¸ÇÏ±â ***************/
+/************ Part 3. otherì—ì„œ chisq, fisher exact test êµ¬í•˜ê¸° ***************/
 /************************************************************************************/
 
-/* R¿¡¼­ MGUS to MM °¡Á®¿À±â (N=281) */
+/* Rì—ì„œ MGUS to MM ê°€ì ¸ì˜¤ê¸° (N=281) */
 proc import out=mgus_to_mm
 datafile="/vol/userdata13/sta_room417/mgus_to_mm.csv"
 dbms=csv
@@ -299,7 +299,7 @@ run;
 data mgus_to_mm; set mgus_to_mm; jid1=compress(put(jid, 20.)); run;
 data mgus_to_mm; set mgus_to_mm; drop jid; rename jid1=jid; run;
 
-/*** mergeÇÏ±â ***/
+/*** mergeí•˜ê¸° ***/
 /* mgus */
 data MGUS_to_MM; set mgus_to_mm; group=1; run; *281;
 data sMM_to_MM; set aa.final_smm_cohort; if mm_outcome=1; group=2; run; *1,884;
@@ -346,7 +346,7 @@ where (div_cd in ('189901ATB', '463301BIJ', '463302BIJ', '463303BIJ', '485701ACH
 group by jid;
 quit; *;
 
-/* ¾àÁ¦¸¦ category·Î ºĞ·ù */
+/* ì•½ì œë¥¼ categoryë¡œ ë¶„ë¥˜ */
 proc sql;
 create table MM_medication4 as
 select *,
@@ -379,13 +379,13 @@ proc sort data=MM_medication6 nodupkey out=MM_medication_id; by jid; run;
 proc sql;
 create table MM_medication_id as
 select *,
-/* ´Üµ¶ »ç¿ë */
+/* ë‹¨ë… ì‚¬ìš© */
 case when (mel_yn1=1 and borte_yn1=0 and thali_yn1=0 and lenal_yn1=0) then 1 else 0 end as mel_only,
 case when (mel_yn1=0 and borte_yn1=1 and thali_yn1=0 and lenal_yn1=0) then 1 else 0 end as borte_only,
 case when (mel_yn1=0 and borte_yn1=0 and thali_yn1=1 and lenal_yn1=0) then 1 else 0 end as thali_only,
 case when (mel_yn1=0 and borte_yn1=0 and thali_yn1=0 and lenal_yn1=1) then 1 else 0 end as lenal_only,
 
-/* 2°³ combination */
+/* 2ê°œ combination */
 case when (mel_yn1=1 and borte_yn1=1 and thali_yn1=0 and lenal_yn1=0) then 1 else 0 end as mel_borte,
 case when (mel_yn1=1 and borte_yn1=0 and thali_yn1=1 and lenal_yn1=0) then 1 else 0 end as mel_thali,
 case when (mel_yn1=1 and borte_yn1=0 and thali_yn1=0 and lenal_yn1=1) then 1 else 0 end as mel_lenal,
@@ -394,12 +394,12 @@ case when (mel_yn1=0 and borte_yn1=1 and thali_yn1=1 and lenal_yn1=0) then 1 els
 case when (mel_yn1=0 and borte_yn1=1 and thali_yn1=0 and lenal_yn1=1) then 1 else 0 end as borte_lenal,
 case when (mel_yn1=0 and borte_yn1=0 and thali_yn1=1 and lenal_yn1=1) then 1 else 0 end as thali_lenal,
 
-/* 3°³ combination */
+/* 3ê°œ combination */
 case when (mel_yn1=1 and borte_yn1=1 and thali_yn1=1 and lenal_yn1=0) then 1 else 0 end as mel_borte_thali,
 case when (mel_yn1=1 and borte_yn1=1 and thali_yn1=0 and lenal_yn1=1) then 1 else 0 end as mel_borte_lenal,
 case when (mel_yn1=0 and borte_yn1=1 and thali_yn1=1 and lenal_yn1=1) then 1 else 0 end as borte_thali_lenal,
 
-/* 4°³ combination */
+/* 4ê°œ combination */
 case when (mel_yn1=1 and borte_yn1=1 and thali_yn1=1 and lenal_yn1=1) then 1 else 0 end as mel_borte_thali_lenal
 
 from MM_medication_id; quit;
@@ -413,7 +413,7 @@ from &dbname. as a left join MM_medication_id as b on a.jid=b.jid; quit;
 %MEDI3(dbname=smm_to_mm);
 %MEDI3(dbname=denovoMM);
 
-/* chisq-test, fisher's exact test »Ì±â À§ÇÔ */
+/* chisq-test, fisher's exact test ë½‘ê¸° ìœ„í•¨ */
 proc sql;
 create table mgus as
 select mel_thali, mel_lenal, 1 as group
