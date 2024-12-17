@@ -1,6 +1,0 @@
-- 0819_jsh_cohort.sas: 진선샘 survival prediction cohort 만든 것
-- code02_cohort_Feb_only_mgus.sas: 여러명의 손길이 닿은.. MGUS_to_symMM 코호트 코드
-- MGUS_to_symMM_code_240823.sas: 기존 MGUS_to_symMM 코호트에서 cci, mm약물, death 파트를 내 연구에 맞게 새로 정의해서 갖다 붙임.
-- sMM_and_denovoMM_code_240823.sas: sMM to symMM 코호트, de novo symMM 코호트 코드
-- ch_MM_medication_code_240823.sas: MGUS to symMM, sMM to symMM, de novo symMM 코호트에 MM medication(melphalan, vortezomib, thalidomide, lenalidomide, ...)를 붙이기 위한 코드
-    - MGUS_to_symMM과 sMM_and_denovoMM code에서 코호트 만든 후 MM_medication code에서 melphalan, vortezomib, ... 등 약물 변수 붙였음.
