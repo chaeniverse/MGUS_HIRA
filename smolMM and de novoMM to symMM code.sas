@@ -2,14 +2,14 @@
 libname aa '/vol/userdata13/sta_room417' ;
 
 /**************************/
-/**** smm cohort Á¦ÀÛ *****/
+/**** smm cohort ì œì‘ *****/
 /**************************/
 
-/* n¼ö ¼¼±â */
+/* nìˆ˜ ì„¸ê¸° */
 proc sort data= aa.t200_2023q4_18 nodupkey out=jid_num; by jid; run; *48,362;
 
-/* Áø¼±»ù ÄÚÈ£Æ® ¸¸µå´À¶ó exclusion criteria Áø¼±»ù ¹öÀüÀ¸·Î ¾÷µ¥ÀÌÆ® µÇ¾îÀÖÀ½. n¼ö ¾È¸ÂÀ»¼ö ÀÖÀ½. */
-/* D472 ¾ø´Â ¾Öµé »Ì´Â´Ù.*/
+/* ì§„ì„ ìƒ˜ ì½”í˜¸íŠ¸ ë§Œë“œëŠë¼ exclusion criteria ì§„ì„ ìƒ˜ ë²„ì „ìœ¼ë¡œ ì—…ë°ì´íŠ¸ ë˜ì–´ìˆìŒ. nìˆ˜ ì•ˆë§ì„ìˆ˜ ìˆìŒ. */
+/* D472 ì—†ëŠ” ì• ë“¤ ë½‘ëŠ”ë‹¤.*/
 proc sql;
 create table aa.no_d472_smm as
 select *
@@ -18,7 +18,7 @@ where jid not in (select distinct jid
 						from aa.t200_2023q4_18
 						where substr(main_sick,1,4) in ('D472'));
 quit; *22,831,043;
-/* n¼ö ¼¼±â */
+/* nìˆ˜ ì„¸ê¸° */
 proc sort data=aa.no_d472_smm nodupkey out=no_d472_smm_id; by jid; run; *38,416;
 
 
@@ -26,18 +26,18 @@ proc sort data=aa.no_d472_smm nodupkey out=no_d472_smm_id; by jid; run; *38,416;
 /*************** Exclusion criteria ***************/
 /************************************************/
 
-/*** 1-1. C90 ÀÖÀ¸¸é Ãâ·Â ***/
+/*** 1-1. C90 ìˆìœ¼ë©´ ì¶œë ¥ ***/
 proc sql;
 create table aa.c90_smm as
 select *
 from aa.no_d472_smm
 where substr(main_sick,1,3) in ('C90');
 quit; *1,970,453;
-/* n¼ö ¼¼±â */
+/* nìˆ˜ ì„¸ê¸° */
 proc sort data=aa.c90_smm nodupkey out=c90_smm_id; by jid; run; *28,634;
 
 
-/*** 1-2. C90 ÇÑ¹ø ¹ŞÀº ¾Öµé »Ì±â ***/
+/*** 1-2. C90 í•œë²ˆ ë°›ì€ ì• ë“¤ ë½‘ê¸° ***/
 proc sql;
 create table c90_smm_once as
 select distinct jid
@@ -46,7 +46,7 @@ group by jid
 having count(jid) =1;
 quit; *4,070;
 
-/*** 1-3. C90 µÎ¹ø ÀÌ»óÀÌ¸é Ãâ·Â (= C90 ÇÑ¹ø ¹ŞÀº ¾Öµé »©±â)***/
+/*** 1-3. C90 ë‘ë²ˆ ì´ìƒì´ë©´ ì¶œë ¥ (= C90 í•œë²ˆ ë°›ì€ ì• ë“¤ ë¹¼ê¸°)***/
 proc sql;
 create table aa.c90_smm_twice as
 select *
@@ -56,11 +56,11 @@ where jid not in (select distinct jid
 				group by jid
 				having count(jid) = 1);
 quit; *1,966,383;
-/* n¼ö ¼¼±â */
+/* nìˆ˜ ì„¸ê¸° */
 proc sort data=aa.c90_smm_twice nodupkey out=c90_smm_twice_id; by jid; run; *24,564;
 
 
-/*** 2-1. c90 Ã¹ Áø´Ü ½ÃÁ¡ Á¤ÀÇ ***/
+/*** 2-1. c90 ì²« ì§„ë‹¨ ì‹œì  ì •ì˜ ***/
 proc sql;
 create table aa.wash_smm as
 select *, min(recu_fr_dd) as first_c90_date
@@ -68,7 +68,7 @@ from aa.c90_smm_twice
 group by jid;
 quit; *1,966,383;
 
-/* first_c90_dateÀ» date formatÀ¸·Î Á¤ÀÇ */
+/* first_c90_dateì„ date formatìœ¼ë¡œ ì •ì˜ */
 data aa.wash_smm; set aa.wash_smm;
 first_c90_date_tmp = input(first_c90_date, yymmdd10.);
 format first_c90_date_tmp yymmdd10.;
@@ -77,7 +77,7 @@ rename first_c90_date_tmp = first_c90_date;
 run;
 
 
-/*** 2-2. first_c90_date°¡ 2007, 2008ÀÎ °æ¿ìÀÇ n¼ö Ãâ·Â***/
+/*** 2-2. first_c90_dateê°€ 2007, 2008ì¸ ê²½ìš°ì˜ nìˆ˜ ì¶œë ¥***/
 proc sql;
 create table diagnosis0708 as
 select distinct jid
@@ -85,7 +85,7 @@ from aa.wash_smm
 where year(first_c90_date) in (2007, 2008);
 quit; *3,656;
 
-/*** 2-3. wash out period (first_c90_date°¡ 2007, 2008ÀÌ¸é »èÁ¦)***/
+/*** 2-3. wash out period (first_c90_dateê°€ 2007, 2008ì´ë©´ ì‚­ì œ)***/
 proc sql;
 create table aa.wash_smm2 as
 select *
@@ -94,20 +94,20 @@ where jid not in (select distinct jid
 						from aa.wash_smm
 						where year(first_c90_date) in (2007, 2008));
 quit; *1,675,965;
-/* n¼ö ¼¼±â */
+/* nìˆ˜ ì„¸ê¸° */
 proc sort data=aa.wash_smm2 nodupkey out=wash_smm2_id; by jid; run; *20,908;
 
-/*** 3-1. V193 ÀÖ´Â ¾Öµé »Ì´Â´Ù. ***/
+/*** 3-1. V193 ìˆëŠ” ì• ë“¤ ë½‘ëŠ”ë‹¤. ***/
 proc sql;
 create table aa.v193_smm as
 select *
 from aa.wash_smm2
 where substr(prcl_sym_tp_cd,1,4) in ('V193');
 quit; *1,609,678;
-/* n¼ö ¼¼±â */
+/* nìˆ˜ ì„¸ê¸° */
 proc sort data=aa.v193_smm nodupkey out=v193_smm_id; by jid; run; *18,916;
 
-/* n¼ö Ã¼Å© °â & °ËÅä °â V193 ¾ø´Â n¼ö¸¦ ¼¾´Ù. */
+/* nìˆ˜ ì²´í¬ ê²¸ & ê²€í†  ê²¸ V193 ì—†ëŠ” nìˆ˜ë¥¼ ì„¼ë‹¤. */
 proc sql;
 create table no_v193_smm as
 select distinct jid
@@ -118,8 +118,8 @@ where jid not in (select distinct jid
 quit; *1,992;
 
 
-/*** 4-1. no-V193±îÁö »« ÀÌ ½ÃÁ¡¿¡¼­ c90 Ã¹ Áø´Ü½Ã ³ªÀÌ¸¦ Á¤ÀÇÇÑ´Ù. ***/
-/* c90 Ã¹ Áø´Ü ½Ã ³ªÀÌ³ª min(age)³ª °°Àº ¸»ÀÌ´Ù. c90¸¸ ÀÖ´Â µ¥ÀÌÅÍ¿¡¼­ min(age)¸¦ »ÌÀº °Å±â ¶§¹®ÀÌ´Ù.*/
+/*** 4-1. no-V193ê¹Œì§€ ëº€ ì´ ì‹œì ì—ì„œ c90 ì²« ì§„ë‹¨ì‹œ ë‚˜ì´ë¥¼ ì •ì˜í•œë‹¤. ***/
+/* c90 ì²« ì§„ë‹¨ ì‹œ ë‚˜ì´ë‚˜ min(age)ë‚˜ ê°™ì€ ë§ì´ë‹¤. c90ë§Œ ìˆëŠ” ë°ì´í„°ì—ì„œ min(age)ë¥¼ ë½‘ì€ ê±°ê¸° ë•Œë¬¸ì´ë‹¤.*/
 proc sql;
 create table aa.age19_smm as
 select *, min(pat_age) as first_c90_age
@@ -127,7 +127,7 @@ from aa.v193_smm
 group by jid;
 quit; *1,609,678;
 
-/*** 4-2. first_c90_age°¡ <19ÀÎ ¼ö¸¦ ¼¾´Ù. ***/
+/*** 4-2. first_c90_ageê°€ <19ì¸ ìˆ˜ë¥¼ ì„¼ë‹¤. ***/
 proc sql;
 create table under19_smm as
 select distinct jid
@@ -135,7 +135,7 @@ from aa.age19_smm
 where first_c90_age <19;
 quit; *11;
 
-/*** 4-3. first_c90_age°¡ <19ÀÌ¸é Á¦¿ÜÇÑ´Ù. ***/
+/*** 4-3. first_c90_ageê°€ <19ì´ë©´ ì œì™¸í•œë‹¤. ***/
 proc sql;
 create table aa.age19_smm2 as
 select *
@@ -144,14 +144,14 @@ where jid not in (select distinct jid
 						from aa.age19_smm
 						where first_c90_age <19);
 quit; *1,608,927;
-/* n¼ö ¼¼±â */
+/* nìˆ˜ ì„¸ê¸° */
 proc sort data=aa.age19_smm2 nodupkey out=aa.age19_smm2_id; by jid; run; *18,905;
 
 
-/****************************** T530°ú T300°ú joinÇÑ´Ù. ******************************/
+/****************************** T530ê³¼ T300ê³¼ joiní•œë‹¤. ******************************/
 /************************ 2. SMM ************************/
 
-/* ÀÌ¹Ì µ¹·ÁÁ® ÀÖ´Â dbÀÌ±â¿¡ runÇÏÁö ¾Ê´Â´Ù.  */
+/* ì´ë¯¸ ëŒë ¤ì ¸ ìˆëŠ” dbì´ê¸°ì— runí•˜ì§€ ì•ŠëŠ”ë‹¤.  */
 /* T530 + T200 */
 proc sql;
 create table aa.T530_T200 as
@@ -160,17 +160,17 @@ from aa.T530_2023Q4_18 as a
 left join aa.T200_2023Q4_18 as b
 on a.mid=b.mid; 
 quit;
-/* ¸í¼¼¼­ °áÇÕÅ°·Î joinÇÑ´Ù. */
+/* ëª…ì„¸ì„œ ê²°í•©í‚¤ë¡œ joiní•œë‹¤. */
 
-/* ÀÌ¹Ì µ¹·ÁÁ® ÀÖ´Â dbÀÌ±â¿¡ runÇÏÁö ¾Ê´Â´Ù.  */
+/* ì´ë¯¸ ëŒë ¤ì ¸ ìˆëŠ” dbì´ê¸°ì— runí•˜ì§€ ì•ŠëŠ”ë‹¤.  */
 data aa.T530_T200; set aa.T530_T200;
 drug_date = mdy(substr(RECU_FR_DD,5,2), substr(RECU_FR_DD,7,2), substr(RECU_FR_DD,1,4)); format drug_date yymmdd8.;
-drug_age = pat_age; /* (240417) first_mm_age Á¤ÀÇ¸¦ À§ÇØ ÄÚµå Ãß°¡ */
+drug_age = pat_age; /* (240417) first_mm_age ì •ì˜ë¥¼ ìœ„í•´ ì½”ë“œ ì¶”ê°€ */
 run; 
-/* ¾à¹°º¹¿ëÀÏÀÚ¸¦ Á¤ÀÇÇÑ´Ù. */
+/* ì•½ë¬¼ë³µìš©ì¼ìë¥¼ ì •ì˜í•œë‹¤. */
 
-/* ÀÌ¹Ì µ¹·ÁÁ® ÀÖ´Â dbÀÌ±â¿¡ runÇÏÁö ¾Ê´Â´Ù.  */
-/*T530_T200 ¾à¹°ÀÖ´Â °Í¸¸ »Ì±â Ãß°¡ 0122 */
+/* ì´ë¯¸ ëŒë ¤ì ¸ ìˆëŠ” dbì´ê¸°ì— runí•˜ì§€ ì•ŠëŠ”ë‹¤.  */
+/*T530_T200 ì•½ë¬¼ìˆëŠ” ê²ƒë§Œ ë½‘ê¸° ì¶”ê°€ 0122 */
 data aa.T530_T200_mmall; set aa.T530_T200;
 where div_cd in ('189901ATB', '463301BIJ', '463302BIJ', '463303BIJ', '485701ACH', '485702ACH',
 				   '588201ACH', '588201ATB', '588202ACH', '588202ATB', '588203ACH', '588203ATB', 
@@ -195,8 +195,8 @@ where div_cd in ('189901ATB', '463301BIJ', '463302BIJ', '463303BIJ', '485701ACH'
 keep mid jid div_cd drug_date drug_age;
 run;
 
-/* ÀÌ¹Ì µ¹·ÁÁ® ÀÖ´Â dbÀÌ±â¿¡ runÇÏÁö ¾Ê´Â´Ù.  */
-/* T300¿¡¼­ ¾à¹°ÀÖ´Â °Í¸¸ »Ì±â */
+/* ì´ë¯¸ ëŒë ¤ì ¸ ìˆëŠ” dbì´ê¸°ì— runí•˜ì§€ ì•ŠëŠ”ë‹¤.  */
+/* T300ì—ì„œ ì•½ë¬¼ìˆëŠ” ê²ƒë§Œ ë½‘ê¸° */
 data T300_mm; set aa.T300_2023Q4_18;
 where div_cd in ('189901ATB', '463301BIJ', '463302BIJ', '463303BIJ', '485701ACH', '485702ACH',
 				   '588201ACH', '588201ATB', '588202ACH', '588202ATB', '588203ACH', '588203ATB', 
@@ -219,10 +219,10 @@ where div_cd in ('189901ATB', '463301BIJ', '463302BIJ', '463303BIJ', '485701ACH'
 					'227801ATB', '227801ATR', '227802ATB', '227806ATB') ;
 
 run;*2,288,432;
-/* t30¿¡¼­ ÇÊ¿äÇÑ ¾à¹°µé¸¸ »ÌÀ¸½Å µí. */
+/* t30ì—ì„œ í•„ìš”í•œ ì•½ë¬¼ë“¤ë§Œ ë½‘ìœ¼ì‹  ë“¯. */
 
-/* ÀÌ¹Ì µ¹·ÁÁ® ÀÖ´Â dbÀÌ±â¿¡ runÇÏÁö ¾Ê´Â´Ù.  */
-/* T300_mm¿¡ T200À» ºÙÀÎ´Ù. */
+/* ì´ë¯¸ ëŒë ¤ì ¸ ìˆëŠ” dbì´ê¸°ì— runí•˜ì§€ ì•ŠëŠ”ë‹¤.  */
+/* T300_mmì— T200ì„ ë¶™ì¸ë‹¤. */
 proc sql;
 create table aa.T300_T200_mm as
 select *
@@ -230,18 +230,18 @@ from T300_mm as a
 left join aa.T200_2023Q4_18 as b
 on a.mid=b.mid; 
 quit;
-/* t30 raw table¿¡¼­ ¾à¹° »ÌÀº °Í¿¡ t20 raw table¸¦ ¸í¼¼¼­ °áÇÕÅ°·Î Á¶ÀÎÇÏ¿´´Ù. */
+/* t30 raw tableì—ì„œ ì•½ë¬¼ ë½‘ì€ ê²ƒì— t20 raw tableë¥¼ ëª…ì„¸ì„œ ê²°í•©í‚¤ë¡œ ì¡°ì¸í•˜ì˜€ë‹¤. */
 
 data aa.T300_T200_mm; set aa.T300_T200_mm;
 drug_date = mdy(substr(RECU_FR_DD,5,2), substr(RECU_FR_DD,7,2), substr(RECU_FR_DD,1,4)); format drug_date yymmdd8.;
-drug_age = pat_age; /* (240417) first_mm_age Á¤ÀÇ¸¦ À§ÇØ ÄÚµå Ãß°¡ */
+drug_age = pat_age; /* (240417) first_mm_age ì •ì˜ë¥¼ ìœ„í•´ ì½”ë“œ ì¶”ê°€ */
 keep mid jid div_cd drug_date drug_age;
 run;
-/* ¸¶Âù°¡Áö·Î drug_date¸¦ Á¤ÀÇÇÏ¿´´Ù. */
+/* ë§ˆì°¬ê°€ì§€ë¡œ drug_dateë¥¼ ì •ì˜í•˜ì˜€ë‹¤. */
 
 
 /* T530 mm + T300 mm*/
-/* ¿©±â Á¶±İ ¼öÁ¤ÇÏ¿´´Ù. t530_t200_mm -> t530_t200_mmall */
+/* ì—¬ê¸° ì¡°ê¸ˆ ìˆ˜ì •í•˜ì˜€ë‹¤. t530_t200_mm -> t530_t200_mmall */
 proc sql;
 create table aa.T530_T300_mm_2 as
 select * 
@@ -250,31 +250,31 @@ select *
 select *
 	from aa.T300_T200_mm ;
 quit; 
-/* t530_t200°ú t300_t200À» union all·Î ºÙÀÎ´Ù. */
+/* t530_t200ê³¼ t300_t200ì„ union allë¡œ ë¶™ì¸ë‹¤. */
 
-/* jid¿Í drug_date ¼øÀ¸·Î Á¤·Ä */
+/* jidì™€ drug_date ìˆœìœ¼ë¡œ ì •ë ¬ */
 proc sort data=aa.T530_T300_mm_2; by jid drug_date; run;
 
 /************************************************************************/
-/*** t530_t300¿¡¼­ screening jid ÇØ´çÇÏ´Â ¾Öµé¸¸ »Ì±â ***/
+/*** t530_t300ì—ì„œ screening jid í•´ë‹¹í•˜ëŠ” ì• ë“¤ë§Œ ë½‘ê¸° ***/
 proc sql;
 create table aa.smm_mm as
 select jid, drug_date, div_cd, drug_age
 from aa.t530_t300_mm_2
 where jid in (select distinct jid from aa.age19_smm2_id); quit; *1,688,020;
 
-/* 1-1. mm ¾à¹° Á¤ÀÇ (mm ¾à¹° ÀÖÀ¸¸é mm_yn=1·Î ¾øÀ¸¸é mm_yn=0À¸·Î Á¤ÀÇ) */
+/* 1-1. mm ì•½ë¬¼ ì •ì˜ (mm ì•½ë¬¼ ìˆìœ¼ë©´ mm_yn=1ë¡œ ì—†ìœ¼ë©´ mm_yn=0ìœ¼ë¡œ ì •ì˜) */
 data aa.smm_mm2; set aa.smm_mm;
 if (div_cd in ('189901ATB', '463301BIJ', '463302BIJ', '463303BIJ', '485701ACH', '485702ACH',
 									'588201ACH', '588201ATB', '588202ACH', '588202ATB', '588203ACH', '588203ATB',
 									'588204ACH', '588204ATB', '588205ACH', '588205ATB', '588206ACH', '588206ATB',
 									'588207ACH', '588207ATB'
 )) then mm_yn = 1; run;
-/* 1-2. mm_yn=. ÀÎ ¾ÖµéÀº mm_yn=0À¸·Î ÇØÁØ´Ù. */
+/* 1-2. mm_yn=. ì¸ ì• ë“¤ì€ mm_yn=0ìœ¼ë¡œ í•´ì¤€ë‹¤. */
 data aa.smm_mm2; set aa.smm_mm2;
 if mm_yn=. then mm_yn=0; run;
 
-/* 1-3. Ã¹ mm º¹¿ëÀÏÀ» Á¤ÀÇÇÑ´Ù. */
+/* 1-3. ì²« mm ë³µìš©ì¼ì„ ì •ì˜í•œë‹¤. */
 proc sql;
 create table first_mm as
 select jid, min(drug_date) as first_mm_date, min(drug_age) as first_mm_age
@@ -285,46 +285,46 @@ quit;
 data first_mm; set first_mm;
 format first_mm_date yymmdd8.; run; 
 
-/* 1-4. ¾à¹° °íÀ¯Å° Ãâ·Â */
+/* 1-4. ì•½ë¬¼ ê³ ìœ í‚¤ ì¶œë ¥ */
 proc sort data=aa.smm_mm2; by jid descending mm_yn; run;
 proc sort data=aa.smm_mm2 nodupkey out=aa.smm_mm_id; by jid; run;
 
-/* 1-5. ¾à¹° °íÀ¯Å° db¿¡ first_mm_date, first_mm_age¸¦ ºÙÀÎ´Ù. */
+/* 1-5. ì•½ë¬¼ ê³ ìœ í‚¤ dbì— first_mm_date, first_mm_ageë¥¼ ë¶™ì¸ë‹¤. */
 proc sql;
 create table aa.smm_mm3 as
 select a.jid, a.mm_yn, b.first_mm_date, b.first_mm_age
 from aa.smm_mm_id as a left join first_mm as b on a.jid=b.jid; quit;
-/* ÀÌµû°¡ screenig db¿¡ ´Ù °®´Ù ºÙÀÏ°Å´Ù. */
+/* ì´ë”°ê°€ screenig dbì— ë‹¤ ê°–ë‹¤ ë¶™ì¼ê±°ë‹¤. */
 
-/* 2. t20¿¡¼­ ¸¶Áö¸· Áø´ÜÀÏÀ» Á¤ÀÇÇÑ´Ù. */
+/* 2. t20ì—ì„œ ë§ˆì§€ë§‰ ì§„ë‹¨ì¼ì„ ì •ì˜í•œë‹¤. */
 proc sql;
 create table last_dig_date as
 select jid, max(recu_to_dd) as last_dig_date
 from aa.t200_2023q4_18
 group by jid; quit;
-/* last_dig_date¸¦ date formatÀ¸·Î Á¤ÀÇ */
+/* last_dig_dateë¥¼ date formatìœ¼ë¡œ ì •ì˜ */
 data last_dig_date; set last_dig_date;
 last_dig_date_tmp = input(last_dig_date, yymmdd10.);
 format last_dig_date_tmp yymmdd10.;
 drop last_dig_date;
 rename last_dig_date_tmp = last_dig_date; run;
-/* ÀÌµû°¡ screenig db¿¡ °®´Ù ºÙÀÏ°Å´Ù. */
+/* ì´ë”°ê°€ screenig dbì— ê°–ë‹¤ ë¶™ì¼ê±°ë‹¤. */
 
-/*** 3. »ç¸Á Á¤ÀÇ ***/
-/* 3-1. dgrslt_tp_cd_2·Î Á¤ÀÇ(dgrslt_tp_cd='4'°¡ ÇÑ¹øÀÌ¶óµµ ÀÖÀ» °æ¿ì dgrslt_tp_cd_2=1·Î º»´Ù.) */
+/*** 3. ì‚¬ë§ ì •ì˜ ***/
+/* 3-1. dgrslt_tp_cd_2ë¡œ ì •ì˜(dgrslt_tp_cd='4'ê°€ í•œë²ˆì´ë¼ë„ ìˆì„ ê²½ìš° dgrslt_tp_cd_2=1ë¡œ ë³¸ë‹¤.) */
 data dgrslt_tp_cd_2; set aa.t200_2023q4_18;
 if dgrslt_tp_cd='4' then dgrslt_tp_cd_2=1; 
 keep jid dgrslt_tp_cd dgrslt_tp_cd_2; run;
-/* 3-2. dgrslt_tp_cd_2=. ÀÎ ¾ÖµéÀº dgrslt_tp_cd_2=0À¸·Î ÇØÁØ´Ù. */
+/* 3-2. dgrslt_tp_cd_2=. ì¸ ì• ë“¤ì€ dgrslt_tp_cd_2=0ìœ¼ë¡œ í•´ì¤€ë‹¤. */
 data dgrslt_tp_cd_2; set dgrslt_tp_cd_2;
 if dgrslt_tp_cd_2=. then dgrslt_tp_cd_2=0; run;
 
-/* 3-3. dgrslt_tp_cd_2 °íÀ¯Å° Ãâ·Â */
+/* 3-3. dgrslt_tp_cd_2 ê³ ìœ í‚¤ ì¶œë ¥ */
 proc sort data=dgrslt_tp_cd_2; by jid descending dgrslt_tp_cd_2; run;
 proc sort data=dgrslt_tp_cd_2 nodupkey out=dgrslt_tp_cd_2_id; by jid; run;
-/* ÀÌµû°¡ screenig db¿¡ °®´Ù ºÙÀÏ°Å´Ù. */
+/* ì´ë”°ê°€ screenig dbì— ê°–ë‹¤ ë¶™ì¼ê±°ë‹¤. */
 
-/* ¿©±â¼­ ´Ù °®´Ù ºÙÀÌ±â */
+/* ì—¬ê¸°ì„œ ë‹¤ ê°–ë‹¤ ë¶™ì´ê¸° */
 proc sql;
 create table aa.smm_cohort as
 select a.jid, a.sex_tp_cd, a.first_c90_date, a.first_c90_age,  
@@ -334,22 +334,22 @@ from aa.age19_smm2_id as a left join aa.smm_mm3 as b on a.jid=b.jid
 left join last_dig_date as c on a.jid=c.jid
 left join dgrslt_tp_cd_2_id as d on a.jid=d.jid; quit; *18,905;
 
-/* 3-4. ÃÖÁ¾ »ç¸Á Á¤ÀÇ */
+/* 3-4. ìµœì¢… ì‚¬ë§ ì •ì˜ */
 data aa.smm_cohort2; set aa.smm_cohort;
 if last_dig_date < mdy(11,30,2021) or dgrslt_tp_cd_2 = 1 then death_yn=1; run;
-/* death_yn=. ÀÎ ¾ÖµéÀº death_yn=1À¸·Î ÇØÁØ´Ù. */
+/* death_yn=. ì¸ ì• ë“¤ì€ death_yn=1ìœ¼ë¡œ í•´ì¤€ë‹¤. */
 data aa.smm_cohort2; set aa.smm_cohort2;
 if death_yn=. then death_yn=0; run;
 
-/* death_date Á¤ÀÇ */
+/* death_date ì •ì˜ */
 data aa.smm_cohort2; set aa.smm_cohort2;
 if death_yn=1 then death_date = last_dig_date;
 format death_date yymmdd8.; run;
 
-/* death_yn ¼¼±â */
+/* death_yn ì„¸ê¸° */
 proc freq data=aa.smm_cohort2; table death_yn; run; *death_yn=1  n=10,849;
 
-/* death °ü·Ã º¯¼ö Á¤ÀÇ */
+/* death ê´€ë ¨ ë³€ìˆ˜ ì •ì˜ */
 data aa.smm_cohort3; set aa.smm_cohort2;
 if death_yn=0 then death_day = mdy(11,30,2022) - first_mm_date;
 else if death_yn=1 then death_day = death_date - first_mm_date;
@@ -357,10 +357,10 @@ death_year = death_day/365.65;
 run;
 
 /***************************************************************/
-/************************ outcome Á¤ÀÇ ************************/
+/************************ outcome ì •ì˜ ************************/
 /***************************************************************/
 
-/* 1-1. +-60ÀÏ ÀÌ³» & È¤Àº ±×º¸´Ù ´õ ÀÌÀüÀ» ¼¼¾îº»´Ù. */
+/* 1-1. +-60ì¼ ì´ë‚´ & í˜¹ì€ ê·¸ë³´ë‹¤ ë” ì´ì „ì„ ì„¸ì–´ë³¸ë‹¤. */
 proc sql;
 create table total_60 as
 select *,
@@ -370,7 +370,7 @@ where mm_yn=1; quit;
 proc freq data=total_60; table total_60; run; *total_60=1  n=13,655;
 
 
-/* 1-2. first c90 date ÀÌÈÄ 6°³¿ù ÀÌ³» »ç¸Á */
+/* 1-2. first c90 date ì´í›„ 6ê°œì›” ì´ë‚´ ì‚¬ë§ */
 proc sql;
 create table within_6mths as
 select *,
@@ -388,49 +388,49 @@ from aa.smm_cohort3 as a left join total_60 as b on a.jid=b.jid
 left join within_6mths as c on a.jid=c.jid;
 quit;
 
-/* only_6mths »ı¼º */
+/* only_6mths ìƒì„± */
 data aa.smm_cohort4; set aa.smm_cohort4;
 if total_60 = . and within_6mths = 1 then only_6mths=1; run; 
 proc freq data=aa.smm_cohort4; table only_6mths; run; *only_6mths=1  1,143;
 
 
 
-/* 1-5. C90 ÀÌÈÄ <=60ÀÏ Ã³¹æÀÌ¸é mm_outcome=1·Î Á¤ÀÇÇÑ´Ù. */
+/* 1-5. C90 ì´í›„ <=60ì¼ ì²˜ë°©ì´ë©´ mm_outcome=1ë¡œ ì •ì˜í•œë‹¤. */
 data aa.smm_cohort5; set aa.smm_cohort4;
 if total_60 = 1 then mm_outcome=1;
 run;
 proc freq data= aa.smm_cohort5; table mm_outcome; run; *mm_outcome=1  n=13,655;
 
-/* death within 6mths »©±â */
+/* death within 6mths ë¹¼ê¸° */
 data aa.smm_cohort5; set aa.smm_cohort5;
 if only_6mths=.; run; *17,762;
 
 
-/* mm_outcome=.ÀÌ¸é smm=1·Î Á¤ÀÇ */
+/* mm_outcome=.ì´ë©´ smm=1ë¡œ ì •ì˜ */
 data aa.smm_cohort5; set aa.smm_cohort5;
 if mm_outcome=. then smm=1; run;
 proc freq data=aa.smm_cohort5; table smm; run; *smm=1  4,107;
 
-/* smm=1ÀÎ data¸¸ select */
+/* smm=1ì¸ dataë§Œ select */
 data smm; set aa.smm_cohort5;
 if smm=1; 
 drop mm_outcome; run;
 
-/* aa.smm_cohort5¿¡¼­ mm_outcome=1¸¸ keep */
+/* aa.smm_cohort5ì—ì„œ mm_outcome=1ë§Œ keep */
 data aa.smm_cohort5; set aa.smm_cohort5;
 if mm_outcome=1; run; *13,655;
 
 
-/* smm db¿¡¼­ mm_yn=1ÀÌ¸é mm_outcome=1·Î ÄÚµù */
+/* smm dbì—ì„œ mm_yn=1ì´ë©´ mm_outcome=1ë¡œ ì½”ë”© */
 data smm; set smm;
 if mm_yn=1 then mm_outcome=1; run;
 proc freq data=smm; table mm_outcome; run; *mm_outcome=1  1,884;
 
-/* aa.smm_cohort5¿Í smmÀ» merge */
+/* aa.smm_cohort5ì™€ smmì„ merge */
 data aa.final_smm_cohort; 
 set aa.smm_cohort5 smm; run;
 
-/* mm_outcome=.ÀÌ¸é 0À» ºÎ¿© */
+/* mm_outcome=.ì´ë©´ 0ì„ ë¶€ì—¬ */
 data aa.final_smm_cohort; set aa.final_smm_cohort; 
 if mm_outcome = . then mm_outcome=0; run;
 proc freq data=aa.final_smm_cohort; table mm_outcome; run; *mm_outcome=1  15,539;
@@ -441,7 +441,7 @@ proc freq data=aa.final_smm_cohort; table mm_outcome; run; *mm_outcome=1  15,539
 /********************* CCI part ******************/
 /************************************************/
 
-/* aa.final_smm_cohort¿¡ ÇØ´çÇÏ´Â ¾Öµé µ¥·Á¿Â´Ù. */
+/* aa.final_smm_cohortì— í•´ë‹¹í•˜ëŠ” ì• ë“¤ ë°ë ¤ì˜¨ë‹¤. */
 proc sql;
 create table smm_cci as
 select jid, main_sick, sub_sick, recu_fr_dd
@@ -450,14 +450,14 @@ where jid in (select jid from aa.final_smm_cohort); quit; *;
 data smm_cci; set smm_cci;
 dig_date = mdy(substr(recu_fr_dd,5,2), substr(recu_fr_dd,7,2), substr(recu_fr_dd,1,4)); format dig_date yymmdd10.; run;
 
-/* aa.final_smm_cohort¿¡¼­ first_mm_date¸¦ °¡Á®¿Í ºÙÀÎ´Ù. */
+/* aa.final_smm_cohortì—ì„œ first_mm_dateë¥¼ ê°€ì ¸ì™€ ë¶™ì¸ë‹¤. */
 proc sql;
 create table smm_cci2 as
 select a.*, b.first_mm_date
 from smm_cci as a left join aa.final_smm_cohort as b on a.jid=b.jid; quit;
 
 
-/*** CCI ÀÛ¾÷ ***/
+/*** CCI ì‘ì—… ***/
 proc sql;
 create table smm_cci3 as
 select jid, 
@@ -557,7 +557,7 @@ keep jid mi_yes chf_yes pvd_yes cvd_yes dem_yes cpd_yes rhe_yes pud_yes mld_yes 
 		hp_yes rd_yes cancer_yes sld_yes mst_yes aids_yes;
 run;
 
-/* smm¿¡¼­ ÃÖÁ¾ ÄÚÈ£Æ®? ¸¸µé±â */
+/* smmì—ì„œ ìµœì¢… ì½”í˜¸íŠ¸? ë§Œë“¤ê¸° */
 proc sql;
 create table aa.smm_surv as
 select *
@@ -566,7 +566,7 @@ quit;
 
 
 
-/* denovo MM µû·Î ¸¸µé±â(13,655) */
+/* denovo MM ë”°ë¡œ ë§Œë“¤ê¸°(13,655) */
 proc sql;
 create table aa.denovoMM as
 select *
@@ -574,7 +574,7 @@ from aa.smm_surv
 where smm =.; run; *13,655;
 
 
-/* final sMM cohort µû·Î ¸¸µé±â(4,107) */
+/* final sMM cohort ë”°ë¡œ ë§Œë“¤ê¸°(4,107) */
 proc sql;
 create table aa.final_smm_cohort as
 select *
