@@ -5,11 +5,11 @@ libname aa '/vol/userdata13/sta_room417' ;
 
 /**********************************************/
 /**********************************************/
-/*** 1. Mgus to MM: mgus part¿¡ cci ºÙÀÌ±â ***/
+/*** 1. Mgus to MM: mgus partì— cci ë¶™ì´ê¸° ***/
 /* use work library */
 data mgus_surv; set aa.mgus_surv; run;
 
-/* drug_date, div_cd, mm_outcomeÀ» drop */
+/* drug_date, div_cd, mm_outcomeì„ drop */
 data mgus_surv; set mgus_surv;
 drop div_cd drug_date mm_outcome; run;
 
@@ -17,24 +17,24 @@ drop div_cd drug_date mm_outcome; run;
 data mgus_surv2; set mgus_surv; 
 drop mi_yes chf_yes pvd_yes cvd_yes dem_yes cpd_yes rhe_yes pud_yes mld_yes dwoc_yes dwcc_yes hp_yes rd_yes cancer_yes sld_yes mst_yes aids_yes; run;
 
-/* ¾à¹° db¿¡¼­ mgus_surv jid¿¡ ÇØ´çÇÏ´Â ¾ÖµéÀ» »Ì´Â´Ù. */
+/* ì•½ë¬¼ dbì—ì„œ mgus_surv jidì— í•´ë‹¹í•˜ëŠ” ì• ë“¤ì„ ë½‘ëŠ”ë‹¤. */
 proc sql;
 create table mgus_mm as
 select jid, drug_date, div_cd, drug_age
 from aa.t530_t300_mm_2
 where jid in (select distinct jid from mgus_surv2); quit;
 
-/* 1-1. mm ¾à¹° Á¤ÀÇ (mm ¾à¹° ÀÖÀ¸¸é mm_yn=1·Î ¾øÀ¸¸é mm_yn=0À¸·Î Á¤ÀÇ) */
+/* 1-1. mm ì•½ë¬¼ ì •ì˜ (mm ì•½ë¬¼ ìˆìœ¼ë©´ mm_yn=1ë¡œ ì—†ìœ¼ë©´ mm_yn=0ìœ¼ë¡œ ì •ì˜) */
 data mgus_mm2; set mgus_mm;
 if (div_cd in ('189901ATB', '463301BIJ', '463302BIJ', '463303BIJ', '485701ACH', '485702ACH',
 									'588201ACH', '588201ATB', '588202ACH', '588202ATB', '588203ACH', '588203ATB',
 									'588204ACH', '588204ATB', '588205ACH', '588205ATB', '588206ACH', '588206ATB',
 									'588207ACH', '588207ATB')) then mm_yn=1; run;
-/* 1-2. mm_yn=. ÀÎ ¾ÖµéÀº mm_yn=0À¸·Î ÇØÁØ´Ù. */
+/* 1-2. mm_yn=. ì¸ ì• ë“¤ì€ mm_yn=0ìœ¼ë¡œ í•´ì¤€ë‹¤. */
 data mgus_mm2; set mgus_mm2;
 if mm_yn=. then mm_yn=0; run;
 
-/* 1-3. Ã¹ mm º¹¿ëÀÏÀ» Á¤ÀÇÇÑ´Ù. */
+/* 1-3. ì²« mm ë³µìš©ì¼ì„ ì •ì˜í•œë‹¤. */
 proc sql;
 create table first_mm as
 select jid, min(drug_date) as first_mm_date, min(drug_age) as first_mm_age
@@ -44,24 +44,24 @@ group by jid; quit;
 data first_mm; set first_mm;
 format first_mm_date yymmdd8.; run;
 
-/* 1-4. ¾à¹° °íÀ¯Å° Ãâ·Â */
+/* 1-4. ì•½ë¬¼ ê³ ìœ í‚¤ ì¶œë ¥ */
 proc sort data=mgus_mm2; by jid descending mm_yn; run;
 proc sort data=mgus_mm2 nodupkey out=mgus_mm_id; by jid; run;
 
-/* 1-5. ¾à¹° °íÀ¯Å° db¿¡ first_mm_date¸¦ ºÙÀÎ´Ù. */
+/* 1-5. ì•½ë¬¼ ê³ ìœ í‚¤ dbì— first_mm_dateë¥¼ ë¶™ì¸ë‹¤. */
 proc sql;
 create table mgus_mm3 as
 select a.jid, a.mm_yn, b.first_mm_date, b.first_mm_age
 from mgus_mm_id as a left join first_mm as b on a.jid=b.jid; quit;
 
-/* mgus_surv¿¡ ¾à¹° db¸¦ ºÙÀÎ´Ù. */
+/* mgus_survì— ì•½ë¬¼ dbë¥¼ ë¶™ì¸ë‹¤. */
 proc sql;
 create table mgus_surv_drug as
 select a.*, b.mm_yn, b.first_mm_date, b.first_mm_age
 from mgus_surv2 as a left join mgus_mm3 as b on a.jid=b.jid; quit;
 
-/* death_day, death_year Á¤ÀÇ */
-/* ±âÁ¸ÀÇ death_day, death_year <- ³ÀµĞ´Ù. ÈñÁÖ»ù²²¼­ µ¥ÀÌÅÍ ¸Å´ÏÂ¡ÇÏ½Ç¶§ »ç¿ëÇÏ½Å °Å °°À½. so, death_day_MM, death_year_MMÀ¸·Î »õ·Î Á¤ÀÇÇÑ´Ù. */
+/* death_day, death_year ì •ì˜ */
+/* ê¸°ì¡´ì˜ death_day, death_year <- ëƒ…ë‘”ë‹¤. í¬ì£¼ìƒ˜ê»˜ì„œ ë°ì´í„° ë§¤ë‹ˆì§•í•˜ì‹¤ë•Œ ì‚¬ìš©í•˜ì‹  ê±° ê°™ìŒ. so, death_day_MM, death_year_MMìœ¼ë¡œ ìƒˆë¡œ ì •ì˜í•œë‹¤. */
 data mgus_surv3; set mgus_surv_drug;
 if death_yn=0 then death_day_MM = mdy(11,30,2022) - first_mm_date;
 else if death_yn=1 then death_day_MM = death_date - first_mm_date;
@@ -69,7 +69,7 @@ death_year_MM = death_day_MM/365.65;
 run;
 
 
-/* t20¿¡¼­ jid, main_sick, sub_sick, first dig date¸¦ °¡Á®¿Â´Ù. */
+/* t20ì—ì„œ jid, main_sick, sub_sick, first dig dateë¥¼ ê°€ì ¸ì˜¨ë‹¤. */
 proc sql;
 create table mgus_cci as
 select jid, main_sick, sub_sick, recu_fr_dd
